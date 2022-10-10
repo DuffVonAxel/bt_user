@@ -15,10 +15,7 @@
 // Options
 #define SPP_TAG             "BT_USR"                    // Identifica na Task.
 #define SPP_SERVER_NAME     "BT_SRV"                    // Nome do Servidor.
-#define EXAMPLE_DEVICE_NAME "BT_ESP"
-#define SPP_SHOW_DATA       0
-#define SPP_SHOW_SPEED      1
-#define SPP_SHOW_MODE SPP_SHOW_DATA                     // Modo de exibicao: Dado.
+#define EXAMPLE_DEVICE_NAME "BT_ESP"                    // Nome para busca.
 
 #include <stdint.h>
 #include <string.h>
@@ -34,13 +31,10 @@
 #include "esp_gap_bt_api.h"
 #include "esp_bt_device.h"
 #include "esp_spp_api.h"
-#include "time.h"
-#include "sys/time.h"
 
-static const esp_spp_mode_t esp_spp_mode = ESP_SPP_MODE_CB;
-static struct timeval time_new, time_old;
-static const esp_spp_sec_t sec_mask = ESP_SPP_SEC_AUTHENTICATE;
-static const esp_spp_role_t role_slave = ESP_SPP_ROLE_SLAVE;
+static const esp_spp_mode_t     esp_spp_mode = ESP_SPP_MODE_CB;
+static const esp_spp_sec_t      sec_mask = ESP_SPP_SEC_AUTHENTICATE;
+static const esp_spp_role_t     role_slave = ESP_SPP_ROLE_SLAVE;
 
 static char *bda2str(uint8_t *bda, char *str, size_t size)      // BDA=Bluetooth Device Address
 {
@@ -86,7 +80,6 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         ESP_LOGI(SPP_TAG, "ESP_SPP_CL_INIT_EVT");
         break;
     case ESP_SPP_DATA_IND_EVT:
-#if (SPP_SHOW_MODE == SPP_SHOW_DATA)
         /*
          * Mostra apenas os dados em que o comprimento dos dados eh menor que 128. Se for imprimir dados
          * e a taxa eh alta, eh altamente recomendavel processa-los em outra tarefa de aplicativo de prioridade
@@ -95,11 +88,6 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
          */
         ESP_LOGI(SPP_TAG, "ESP_SPP_DATA_IND_EVT Len:%d Handle:%d", param->data_ind.len, param->data_ind.handle);
         if (param->data_ind.len < 128) esp_log_buffer_hex("", param->data_ind.data, param->data_ind.len);
-#else
-        gettimeofday(&time_new, NULL);
-        data_num += param->data_ind.len;
-        if (time_new.tv_sec - time_old.tv_sec >= 3) print_speed();
-#endif
         break;
     case ESP_SPP_CONG_EVT:
         ESP_LOGI(SPP_TAG, "ESP_SPP_CONG_EVT");
@@ -109,7 +97,7 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         break;
     case ESP_SPP_SRV_OPEN_EVT:
         ESP_LOGI(SPP_TAG, "ESP_SPP_SRV_OPEN_EVT Status:%d Handle:%d, Rem_BDA:[%s]", param->srv_open.status, param->srv_open.handle, bda2str(param->srv_open.rem_bda, bda_str, sizeof(bda_str)));
-        gettimeofday(&time_old, NULL);
+        // gettimeofday(&time_old, NULL);
         break;
     case ESP_SPP_SRV_STOP_EVT:
         ESP_LOGI(SPP_TAG, "ESP_SPP_SRV_STOP_EVT");
