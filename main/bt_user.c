@@ -26,11 +26,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
-#include "esp_bt.h"
-#include "esp_bt_main.h"
-#include "esp_gap_bt_api.h"
-#include "esp_bt_device.h"
-#include "esp_spp_api.h"
+#include "esp_bt.h"                                     // Defaults de parametros + sdkconfig.
+#include "esp_bt_main.h"                                // Relacionado a pilha do BT.
+#include "esp_gap_bt_api.h"                             // Relacionado a funcoes gerais do BT.
+#include "esp_bt_device.h"                              // Pega do BDA e ajusta o BDN.
+#include "esp_spp_api.h"                                // Relacionado ao SPP.
 
 static const esp_spp_mode_t     esp_spp_mode = ESP_SPP_MODE_CB;
 static const esp_spp_sec_t      sec_mask = ESP_SPP_SEC_AUTHENTICATE;
@@ -65,8 +65,7 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         ESP_LOGI(SPP_TAG, "ESP_SPP_OPEN_EVT");
         break;
     case ESP_SPP_CLOSE_EVT:
-        ESP_LOGI(SPP_TAG, "ESP_SPP_CLOSE_EVT Status:%d Handle:%d Close_by_Remote:%d", param->close.status,
-                 param->close.handle, param->close.async);
+        ESP_LOGI(SPP_TAG, "ESP_SPP_CLOSE_EVT Status:%d Handle:%d Close_by_Remote:%d", param->close.status, param->close.handle, param->close.async);
         break;
     case ESP_SPP_START_EVT:
         if (param->start.status == ESP_SPP_SUCCESS) 
@@ -130,7 +129,8 @@ void esp_bt_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
             ESP_LOGI(SPP_TAG, "Codigo PIN: 0000 0000 0000 0000");
             esp_bt_pin_code_t pin_code = {0};
             esp_bt_gap_pin_reply(param->pin_req.bda, true, 16, pin_code);
-        } else 
+        } 
+        else 
         {
             ESP_LOGI(SPP_TAG, "Codigo PIN: 1234");
             esp_bt_pin_code_t pin_code;
@@ -161,7 +161,8 @@ void esp_bt_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
                  bda2str(param->mode_chg.bda, bda_str, sizeof(bda_str)));
         break;
 
-    default: {
+    default: 
+    {
         ESP_LOGI(SPP_TAG, "Evento: %d", event);
         break;
     }
